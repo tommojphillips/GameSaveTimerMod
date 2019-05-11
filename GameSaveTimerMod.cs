@@ -51,6 +51,7 @@ namespace TommoJProductions.GameSaveTimerMod
             {
                 startedFromNewGame = true
             };
+            SaveLoad.SerializeSaveFile(this, this.timerSaveData, SAVE_FILE_NAME);
         }
         public override void OnSave()
         {
