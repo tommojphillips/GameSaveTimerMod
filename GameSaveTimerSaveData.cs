@@ -19,11 +19,7 @@ namespace TommoJProductions.GameSaveTimerMod
         /// <summary>
         /// Represents the game start time.
         /// </summary>
-        public float gameStartTime { get; set; }
-        /// <summary>
-        /// Represents the session start time.
-        /// </summary>
-        public float sessionStartTime { get; set; }
+        public static float gameStartTime { get; set; }
         /// <summary>
         /// Represents if the game save timer has been started from a new game.
         /// </summary>
@@ -33,8 +29,8 @@ namespace TommoJProductions.GameSaveTimerMod
         /// </summary>
         public float timePassed { get; set; }
         /// <summary>
-        /// Represents the amount of sessions in the game save.
+        /// Represents the next sessions in the game save.
         /// </summary>
-        public int sessions { get; set; }
+        public int nextSession { get; set; } = 1;
     }
 }

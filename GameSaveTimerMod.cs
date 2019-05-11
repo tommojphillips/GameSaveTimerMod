@@ -13,24 +13,33 @@ namespace TommoJProductions.GameSaveTimerMod
         public override string Version => "0.1";
         public override string Author => "tommojphillips";
 
+        /// <summary>
+        /// Represents the save file name.
+        /// </summary>
         private const string SAVE_FILE_NAME = "gamesavetimermod.txt";
-        private GameSaveTimerSaveData gstsd;
+        /// <summary>
+        /// Represents the save data.
+        /// </summary>
+        private GameSaveTimerSaveData timerSaveData;
+        /// <summary>
+        /// Represents if the game is saving.
+        /// </summary>
         private bool saving = false;
 
         public override void OnLoad()
         {
             // Written, 11.05.2019
 
-            this.gstsd = this.LoadData();
+            this.timerSaveData = this.LoadData();
 
-            if (this.gstsd is null)
+            if (this.timerSaveData is null)
             {
-                this.gstsd = new GameSaveTimerSaveData()
+                this.timerSaveData = new GameSaveTimerSaveData()
                 {
-                    startedFromNewGame = false,
-                    sessions = 1
+                    startedFromNewGame = false
                 };
             }
+            GameSaveTimerSaveData.gameStartTime = this.timerSaveData.timePassed;
 
             ModConsole.Print(this.Name + ": Loaded");
         }
@@ -38,10 +47,9 @@ namespace TommoJProductions.GameSaveTimerMod
         {
             // Written, 11.05.2019
 
-            this.gstsd = new GameSaveTimerSaveData()
+            this.timerSaveData = new GameSaveTimerSaveData()
             {
-                startedFromNewGame = true,
-                sessions = 1, 
+                startedFromNewGame = true
             };
         }
         public override void OnSave()
@@ -61,13 +69,16 @@ namespace TommoJProductions.GameSaveTimerMod
         {
             // Written, 11.05.2019
 
-            string _sessionMessage = "";
-            if (this.gstsd.startedFromNewGame)
+            string _message;
+            if (!saving)
             {
-                _sessionMessage += "| <color= green>started from new game</color>";
+                string _sessionMessage = this.timerSaveData.nextSession == 1 ? "First session" : String.Format("<b>#{0}</b> {1}", this.timerSaveData.nextSession, TimeSpan.FromSeconds(GameSaveTimerSaveData.timePassedSession).ToString());
+                if (this.timerSaveData.startedFromNewGame)
+                    _sessionMessage += " | <color= green>started from new game</color>";
+                _message = string.Format("<color=white>Time Passed: {0}\nSession: {1}</color>", TimeSpan.FromSeconds(this.timerSaveData.timePassed).ToString(), _sessionMessage);
             }
-            _sessionMessage = String.Format("{0} {1}", this.gstsd.sessions == 1 ? "First session" : String.Format("<b>#{0}</b> {1}", this.gstsd.sessions, TimeSpan.FromSeconds(GameSaveTimerSaveData.timePassedSession).ToString()), _sessionMessage);
-            string _message = string.Format("<color=white>Time Passed: {0}\nSession: {1}</color>", TimeSpan.FromSeconds(this.gstsd.timePassed).ToString(), _sessionMessage);
+            else
+                _message = String.Format("Session finished at, {0}\nTotal Time, {1}", TimeSpan.FromSeconds(GameSaveTimerSaveData.timePassedSession).ToString(), TimeSpan.FromSeconds(this.timerSaveData.timePassed).ToString());
             GUI.Label(new Rect(5, 5, 100, 25), _message, new GUIStyle() { fontSize = 18 });
         }
 
@@ -79,9 +90,8 @@ namespace TommoJProductions.GameSaveTimerMod
             {
                 this.saving = true;
                 this.updateTime();
-                this.gstsd.sessionStartTime = this.gstsd.timePassed;
-                this.gstsd.sessions++;
-                SaveLoad.SerializeSaveFile(this, this.gstsd, SAVE_FILE_NAME);
+                this.timerSaveData.nextSession++;
+                SaveLoad.SerializeSaveFile(this, this.timerSaveData, SAVE_FILE_NAME);
             }
             catch
             {
@@ -92,8 +102,8 @@ namespace TommoJProductions.GameSaveTimerMod
         {
             // Written, 11.05.2019
 
-            this.gstsd.timePassed = float.Parse(Math.Round(Time.time - this.gstsd.gameStartTime).ToString());
-            GameSaveTimerSaveData.timePassedSession = float.Parse(Math.Round(Time.time - this.gstsd.sessionStartTime).ToString());
+            this.timerSaveData.timePassed = float.Parse(Math.Round(Time.timeSinceLevelLoad + GameSaveTimerSaveData.gameStartTime).ToString());
+            GameSaveTimerSaveData.timePassedSession = float.Parse(Math.Round(Time.timeSinceLevelLoad).ToString());
         }
         private GameSaveTimerSaveData LoadData()
         {
